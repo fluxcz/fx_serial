@@ -72,6 +72,15 @@ local function stopanimation()
     cleanup()
 end
 
+local function getweaponlabel(weaponname)
+    for _, weapondata in ipairs(fx.supportedweapons) do
+        if string.upper(weaponname) == weapondata.weapon then
+            return weapondata.label
+        end
+    end
+    return weaponname
+end
+
 local function openregistrationmenu()
     ESX.TriggerServerCallback('fx_serial:getplayerweapons', function(weapons)
         if not weapons or #weapons == 0 then
@@ -85,9 +94,10 @@ local function openregistrationmenu()
 
         local weaponoptions = {}
         for _, weapon in ipairs(weapons) do
+            local label = getweaponlabel(weapon)
             table.insert(weaponoptions, {
                 value = weapon,
-                label = weapon
+                label = label
             })
         end
 
@@ -121,12 +131,14 @@ local function openregistrationmenu()
             })
             return
         end
+        
         local playerped = PlayerPedId()
         RequestAnimDict('misscarsteal4@actor')
         while not HasAnimDictLoaded('misscarsteal4@actor') do
             Wait(100)
         end
         TaskPlayAnim(playerped, 'misscarsteal4@actor', 'actor_berating_loop', 8.0, -8.0, -1, 49, 0, false, false, false)
+        
         if lib.progressBar({
             duration = 5000,
             label = 'Registering weapon...',
@@ -264,7 +276,6 @@ RegisterNetEvent('fx_serial:showweaponinfo', function(data)
                     stopanimation()
                 end
             end
-
         })
         
         lib.registerContext({
@@ -300,7 +311,6 @@ RegisterNetEvent('fx_serial:showweaponinfo', function(data)
             icon = 'times-circle',
             iconColor = '#FF0000',
             readOnly = true
-
         })
         
         lib.registerContext({
