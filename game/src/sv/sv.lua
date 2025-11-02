@@ -97,7 +97,7 @@ local function getPlayerWeapons(source, cb)
     for _, item in pairs(inventory) do
         if item.name and item.metadata and item.metadata.serial then
             for _, weapondata in ipairs(fx.supportedweapons) do
-                if string.upper(item.name) == weapondata.weapon then
+                if item.name == weapondata or weapondata.weapon then
                     weapons[#weapons+1] = {item = item.name, label = item.label}
                     break
                 end

@@ -28,10 +28,7 @@ fx.timezone = {
     -- 10 = Australian Eastern Standard Time (AEST)
 }
 
-fx.supportedweapons = {
-    {weapon = 'WEAPON_PISTOL'},
-    {weapon = 'WEAPON_COMBATPISTOL'},
-}
+fx.supportedweapons = {'WEAPON_PISTOL', 'WEAPON_COMBATPISTOL'}
 
 fx.target = {
     label = 'Register Firearm',
