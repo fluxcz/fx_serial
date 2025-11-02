@@ -44,7 +44,7 @@ local function initializedatabase()
                 KEY `identifier` (`identifier`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ]])
- 
+
     end)
 end
 
@@ -61,11 +61,11 @@ local function converttotimezone(mysqltimestamp)
     if type(mysqltimestamp) == 'string' then
         local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
         local year, month, day, hour, min, sec = mysqltimestamp:match(pattern)
-        
+
         if not year then
             return fx.messages.unknown
         end
-        
+
         local timestamp = os.time({
             year = tonumber(year),
             month = tonumber(month),
@@ -74,13 +74,13 @@ local function converttotimezone(mysqltimestamp)
             min = tonumber(min),
             sec = tonumber(sec)
         })
-        
+
         local offsetseconds = (fx.timezone.offset or 0) * 3600
         local localtimestamp = timestamp + offsetseconds
-        
+
         return os.date('%Y-%m-%d %H:%M', localtimestamp)
     end
-    
+
     return fx.messages.unknown
 end
 
@@ -95,9 +95,9 @@ end
 
 local function getplayerweapons(source, cb)
     local xplayer = ESX.GetPlayerFromId(source)
-    if not xplayer then 
+    if not xplayer then
         cb({})
-        return 
+        return
     end
 
     local weapons = {}
@@ -152,7 +152,6 @@ local function registerweapon(source, weapon, serial)
         }, function(insertid)
             if insertid then
                 TriggerClientEvent('fx_serial:notify', source, 'Registration', fx.messages.registration_success, 'success')
-                
             else
                 TriggerClientEvent('fx_serial:notify', source, 'Registration', fx.messages.registration_failed, 'error')
             end

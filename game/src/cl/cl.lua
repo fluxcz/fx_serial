@@ -7,34 +7,34 @@ local function cleanup()
     if isanimating then
         isanimating = false
     end
-    
+
     if animationprop and DoesEntityExist(animationprop) then
         DeleteEntity(animationprop)
         animationprop = nil
     end
-    
+
     local playerped = PlayerPedId()
     ClearPedTasks(playerped)
 end
 
 local function startanimation()
     if isanimating then return end
-    
+
     local playerped = PlayerPedId()
-    
+
     RequestAnimDict(fx.animation.dictionary)
     while not HasAnimDictLoaded(fx.animation.dictionary) do
         Wait(100)
     end
-    
+
     RequestModel(fx.animation.options.props[1].name)
     while not HasModelLoaded(fx.animation.options.props[1].name) do
         Wait(100)
     end
-    
+
     animationprop = CreateObject(GetHashKey(fx.animation.options.props[1].name), 0.0, 0.0, 0.0, true, true, true)
     local boneindex = GetPedBoneIndex(playerped, fx.animation.options.props[1].bone)
-    
+
     AttachEntityToEntity(
         animationprop,
         playerped,
@@ -47,11 +47,11 @@ local function startanimation()
         fx.animation.options.props[1].placement[2].z,
         true, true, false, true, 1, true
     )
-    
+
     TaskPlayAnim(playerped, fx.animation.dictionary, fx.animation.animation, 8.0, -8.0, -1, 49, 0, false, false, false)
-    
+
     isanimating = true
-    
+
     CreateThread(function()
         while isanimating do
             Wait(1000)
@@ -59,7 +59,7 @@ local function startanimation()
                 TaskPlayAnim(playerped, fx.animation.dictionary, fx.animation.animation, 8.0, -8.0, -1, 49, 0, false, false, false)
             end
         end
-        
+
         if animationprop and DoesEntityExist(animationprop) then
             DeleteEntity(animationprop)
             animationprop = nil
@@ -131,14 +131,14 @@ local function openregistrationmenu()
             })
             return
         end
-        
+
         local playerped = PlayerPedId()
         RequestAnimDict('misscarsteal4@actor')
         while not HasAnimDictLoaded('misscarsteal4@actor') do
             Wait(100)
         end
         TaskPlayAnim(playerped, 'misscarsteal4@actor', 'actor_berating_loop', 8.0, -8.0, -1, 49, 0, false, false, false)
-        
+
         if lib.progressBar({
             duration = 5000,
             label = 'Registering weapon...',
@@ -168,7 +168,7 @@ CreateThread(function()
     end
 
     npcped = CreatePed(4, fx.npc.model, fx.npc.coords.x, fx.npc.coords.y, fx.npc.coords.z - 1.0, fx.npc.coords.w, false, true)
-    
+
     SetEntityHeading(npcped, fx.npc.coords.w)
     FreezeEntityPosition(npcped, true)
     SetEntityInvincible(npcped, true)
@@ -192,7 +192,7 @@ end)
 
 AddEventHandler('onResourceStop', function(resourcename)
     if GetCurrentResourceName() ~= resourcename then return end
-    
+
     cleanup()
     
     if DoesEntityExist(npcped) then
@@ -204,7 +204,7 @@ RegisterNetEvent('fx_serial:usechecker', function()
     startanimation()
     
     Wait(500)
-    
+
     local input = lib.inputDialog('Weapon Serial Checker', {
         {
             type = 'input',
@@ -270,7 +270,7 @@ RegisterNetEvent('fx_serial:showweaponinfo', function(data)
                     centered = true,
                     cancel = true
                 })
-                
+
                 if alert == 'confirm' then
                     TriggerServerEvent('fx_serial:unregisterweapon', data.serial)
                     stopanimation()

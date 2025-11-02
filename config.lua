@@ -12,7 +12,7 @@ fx.policejobs = {
 }
 
 fx.checkeritem = 'serial_checker'
-    
+
 fx.timezone = {
     offset = 0,
     -- Offsets:
