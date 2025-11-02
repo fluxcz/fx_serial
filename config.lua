@@ -29,8 +29,8 @@ fx.timezone = {
 }
 
 fx.supportedweapons = {
-    {weapon = 'WEAPON_PISTOL', label = 'Pistol'},
-    {weapon = 'WEAPON_COMBATPISTOL', label = 'Combat Pistol'},
+    {weapon = 'WEAPON_PISTOL'},
+    {weapon = 'WEAPON_COMBATPISTOL'},
 }
 
 fx.target = {

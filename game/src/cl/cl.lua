@@ -94,11 +94,10 @@ local function openregistrationmenu()
 
         local weaponoptions = {}
         for _, weapon in ipairs(weapons) do
-            local label = getweaponlabel(weapon)
-            table.insert(weaponoptions, {
-                value = weapon,
-                label = label
-            })
+            weaponoptions[#weaponoptions+1] = {
+                value = weapon.item,
+                label = weapon.label
+            }
         end
 
         local input = lib.inputDialog('Weapon Registration', {

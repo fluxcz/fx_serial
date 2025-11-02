@@ -84,16 +84,7 @@ local function converttotimezone(mysqltimestamp)
     return fx.messages.unknown
 end
 
-local function getweaponlabel(weaponname)
-    for _, weapondata in ipairs(fx.supportedweapons) do
-        if string.upper(weaponname) == weapondata.weapon then
-            return weapondata.label
-        end
-    end
-    return weaponname
-end
-
-local function getplayerweapons(source, cb)
+local function getPlayerWeapons(source, cb)
     local xplayer = ESX.GetPlayerFromId(source)
     if not xplayer then
         cb({})
@@ -112,7 +103,7 @@ local function getplayerweapons(source, cb)
         if item.name and item.metadata and item.metadata.serial then
             for _, weapondata in ipairs(fx.supportedweapons) do
                 if string.upper(item.name) == weapondata.weapon then
-                    table.insert(weapons, item.name)
+                    weapons[#weapons+1] = {item = item.name, label = item.label}
                     break
                 end
             end
@@ -188,9 +179,10 @@ local function checkserial(source, serial)
                     ownername = user.firstname .. ' ' .. user.lastname
                 end
 
-                local formatteddate = converttotimezone(result.time)
-                local weaponlabel = getweaponlabel(result.weapon)
-                
+                local formatteddate = convertToTimezone(result.time)
+                local items = exports['ox_inventory']:Items()
+                local weaponlabel = items[result.weapon].label
+
                 local dataToSend = {
                     registered = true,
                     owner = ownername,
