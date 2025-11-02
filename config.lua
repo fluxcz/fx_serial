@@ -12,7 +12,7 @@ fx.policejobs = {
 }
 
 fx.checkeritem = 'serial_checker'
-    
+
 fx.timezone = {
     offset = 0,
     -- Offsets:
@@ -28,10 +28,7 @@ fx.timezone = {
     -- 10 = Australian Eastern Standard Time (AEST)
 }
 
-fx.supportedweapons = {
-    {weapon = 'WEAPON_PISTOL', label = 'Pistol'},
-    {weapon = 'WEAPON_COMBATPISTOL', label = 'Combat Pistol'},
-}
+fx.supportedweapons = {'WEAPON_PISTOL', 'WEAPON_COMBATPISTOL'}
 
 fx.target = {
     label = 'Register Firearm',
