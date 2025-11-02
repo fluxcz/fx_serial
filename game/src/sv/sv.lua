@@ -1,4 +1,4 @@
-local version = '1.0'
+local version = '1.1'
 
 local function checkversion()
     CreateThread(function()
@@ -52,23 +52,45 @@ local function converttotimezone(mysqltimestamp)
     if not mysqltimestamp then
         return fx.messages.unknown
     end
-    
+    if type(mysqltimestamp) == 'number' then
+        local timestamp = mysqltimestamp / 1000
+        local offsetseconds = (fx.timezone.offset or 0) * 3600
+        local localtimestamp = timestamp + offsetseconds
+        return os.date('%Y-%m-%d %H:%M', localtimestamp)
+    end
     if type(mysqltimestamp) == 'string' then
         local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
         local year, month, day, hour, min, sec = mysqltimestamp:match(pattern)
         
-        if year then
-            return string.format("%s-%s-%s %s:%s", year, month, day, hour, min)
+        if not year then
+            return fx.messages.unknown
         end
-    end
-    
-    if type(mysqltimestamp) == 'number' then
+        
+        local timestamp = os.time({
+            year = tonumber(year),
+            month = tonumber(month),
+            day = tonumber(day),
+            hour = tonumber(hour),
+            min = tonumber(min),
+            sec = tonumber(sec)
+        })
+        
         local offsetseconds = (fx.timezone.offset or 0) * 3600
-        local localtimestamp = mysqltimestamp + offsetseconds
+        local localtimestamp = timestamp + offsetseconds
+        
         return os.date('%Y-%m-%d %H:%M', localtimestamp)
     end
     
     return fx.messages.unknown
+end
+
+local function getweaponlabel(weaponname)
+    for _, weapondata in ipairs(fx.supportedweapons) do
+        if string.upper(weaponname) == weapondata.weapon then
+            return weapondata.label
+        end
+    end
+    return weaponname
 end
 
 local function getplayerweapons(source, cb)
@@ -88,8 +110,8 @@ local function getplayerweapons(source, cb)
 
     for _, item in pairs(inventory) do
         if item.name and item.metadata and item.metadata.serial then
-            for _, supportedweapon in ipairs(fx.supportedweapons) do
-                if string.upper(item.name) == supportedweapon then
+            for _, weapondata in ipairs(fx.supportedweapons) do
+                if string.upper(item.name) == weapondata.weapon then
                     table.insert(weapons, item.name)
                     break
                 end
@@ -105,8 +127,8 @@ local function registerweapon(source, weapon, serial)
     if not xplayer then return end
 
     local issupported = false
-    for _, supportedweapon in ipairs(fx.supportedweapons) do
-        if string.upper(weapon) == supportedweapon then
+    for _, weapondata in ipairs(fx.supportedweapons) do
+        if string.upper(weapon) == weapondata.weapon then
             issupported = true
             break
         end
@@ -168,12 +190,13 @@ local function checkserial(source, serial)
                 end
 
                 local formatteddate = converttotimezone(result.time)
+                local weaponlabel = getweaponlabel(result.weapon)
                 
                 local dataToSend = {
                     registered = true,
                     owner = ownername,
-                    weapon = result.weapon,
-                    date = formatteddate or "2025-10-25 23:34",
+                    weapon = weaponlabel,
+                    date = formatteddate,
                     serial = serial
                 }
 
