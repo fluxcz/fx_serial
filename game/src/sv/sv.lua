@@ -97,7 +97,7 @@ local function getPlayerWeapons(source, cb)
     for _, item in pairs(inventory) do
         if item.name and item.metadata and item.metadata.serial then
             for _, weapondata in ipairs(fx.supportedweapons) do
-                if item.name == weapondata or weapondata.weapon then
+                if item.name == weapondata.weapon or weapondata then
                     weapons[#weapons+1] = {item = item.name, label = item.label}
                     break
                 end
@@ -115,7 +115,7 @@ local function registerWeapon(weapon, serial)
 
     local issupported = false
     for _, weapondata in ipairs(fx.supportedweapons) do
-        if weapon == weapondata.weapon then
+        if weapon == weapondata.weapon or weapondata then
             issupported = true
             break
         end
