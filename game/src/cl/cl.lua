@@ -1,5 +1,4 @@
 local npcped = nil
-local npcspawned = false
 local isanimating = false
 local animationprop = nil
 
@@ -17,7 +16,7 @@ local function cleanup()
     ClearPedTasks(playerped)
 end
 
-local function startanimation()
+local function startAnimation()
     if isanimating then return end
 
     local playerped = PlayerPedId()
@@ -68,21 +67,8 @@ local function startanimation()
     end)
 end
 
-local function stopanimation()
-    cleanup()
-end
-
-local function getweaponlabel(weaponname)
-    for _, weapondata in ipairs(fx.supportedweapons) do
-        if string.upper(weaponname) == weapondata.weapon then
-            return weapondata.label
-        end
-    end
-    return weaponname
-end
-
-local function openregistrationmenu()
-    ESX.TriggerServerCallback('fx_serial:getplayerweapons', function(weapons)
+local function openRegistrationMenu()
+    ESX.TriggerServerCallback('fx_serial:getPlayerWeapons', function(weapons)
         if not weapons or #weapons == 0 then
             lib.notify({
                 title = 'Registration',
@@ -148,7 +134,7 @@ local function openregistrationmenu()
             },
         }) then
             ClearPedTasks(playerped)
-            TriggerServerEvent('fx_serial:registerweapon', weapon, serial)
+            TriggerServerEvent('fx_serial:registerWeapon', weapon, serial)
         else
             ClearPedTasks(playerped)
             lib.notify({
@@ -180,28 +166,24 @@ CreateThread(function()
             label = fx.target.label,
             icon = fx.target.icon,
             distance = fx.target.distance,
-            onSelect = function()
-                openregistrationmenu()
-            end
+            onSelect = openRegistrationMenu
         }
     })
-
-    npcspawned = true
 end)
 
 AddEventHandler('onResourceStop', function(resourcename)
     if GetCurrentResourceName() ~= resourcename then return end
 
     cleanup()
-    
-    if DoesEntityExist(npcped) then
+
+    if npcped then
         DeleteEntity(npcped)
     end
 end)
 
-RegisterNetEvent('fx_serial:usechecker', function()
-    startanimation()
-    
+RegisterNetEvent('fx_serial:useChecker', function()
+    startAnimation()
+
     Wait(500)
 
     local input = lib.inputDialog('Weapon Serial Checker', {
@@ -216,7 +198,7 @@ RegisterNetEvent('fx_serial:usechecker', function()
     })
 
     if not input or not input[1] or input[1] == '' then
-        stopanimation()
+        cleanup()
         lib.notify({
             title = 'Serial Checker',
             description = fx.messages.no_serial,
@@ -225,40 +207,40 @@ RegisterNetEvent('fx_serial:usechecker', function()
         return
     end
 
-    TriggerServerEvent('fx_serial:checkserial', input[1])
+    TriggerServerEvent('fx_serial:checkSerial', input[1])
 end)
 
-RegisterNetEvent('fx_serial:showweaponinfo', function(data)
-    
-    local menuoptions = {}
-    
-    if data.registered then
-        table.insert(menuoptions, {
+RegisterNetEvent('fx_serial:showWeaponInfo', function(data)
+    local menuoptions = {
+        {
             title = fx.messages.owner_label,
-            description = data.owner or fx.messages.unknown,
+            description = data.registered and data.owner or fx.messages.unknown,
             icon = 'user',
             readOnly = true
-        })
-        table.insert(menuoptions, {
+        },
+        {
             title = fx.messages.weapon_label,
-            description = data.weapon or fx.messages.unknown,
+            description = data.registered and data.weapon or fx.messages.unknown,
             icon = 'gun',
             readOnly = true
-        })
-        table.insert(menuoptions, {
+        },
+        {
             title = fx.messages.date_label,
-            description = tostring(data.date or fx.messages.unknown),
+            description = tostring(data.registered and data.date or fx.messages.unknown),
             icon = 'calendar',
             readOnly = true
-        })
-        table.insert(menuoptions, {
+        },
+        {
             title = fx.messages.status_label,
-            description = fx.messages.status_registered,
-            icon = 'check-circle',
-            iconColor = '#00FF00',
+            description = data.registered and fx.messages.status_registered or fx.messages.status_not_registered,
+            icon = data.registered and 'check-circle' or 'times-circle',
+            iconColor = data.registered and '#00FF00' or '#FF0000',
             readOnly = true
-        })
-        table.insert(menuoptions, {
+        },
+    }
+
+    if data.registered then
+        menuoptions[#menuoptions+1] = {
             title = fx.messages.unregister_button,
             icon = 'trash',
             iconColor = '#FF0000',
@@ -271,73 +253,34 @@ RegisterNetEvent('fx_serial:showweaponinfo', function(data)
                 })
 
                 if alert == 'confirm' then
-                    TriggerServerEvent('fx_serial:unregisterweapon', data.serial)
-                    stopanimation()
+                    TriggerServerEvent('fx_serial:unregisterWeapon', data.serial)
+                    cleanup()
                 end
             end
-        })
-        
-        lib.registerContext({
-            id = 'oxinfo',
-            title = fx.messages.registered_title,
-            onExit = function()
-                stopanimation()
-            end,
-            options = menuoptions
-        })
-    else
-        table.insert(menuoptions, {
-            title = fx.messages.owner_label,
-            description = fx.messages.unknown,
-            icon = 'user',
-            readOnly = true
-        })
-        table.insert(menuoptions, {
-            title = fx.messages.weapon_label,
-            description = fx.messages.unknown,
-            icon = 'gun',
-            readOnly = true
-        })
-        table.insert(menuoptions, {
-            title = fx.messages.date_label,
-            description = fx.messages.unknown,
-            icon = 'calendar',
-            readOnly = true
-        })
-        table.insert(menuoptions, {
-            title = fx.messages.status_label,
-            description = fx.messages.status_not_registered,
-            icon = 'times-circle',
-            iconColor = '#FF0000',
-            readOnly = true
-        })
-        
-        lib.registerContext({
-            id = 'oxinfo',
-            title = fx.messages.not_registered_title,
-            onExit = function()
-                stopanimation()
-            end,
-            options = menuoptions
-        })
+        }
     end
 
-    lib.showContext('oxinfo')
-    
+    lib.registerContext({
+        id = 'fx_serial:weaponInfo',
+        title = data.registered and fx.messages.registered_title or fx.messages.not_registered_title,
+        onExit = cleanup,
+        options = menuoptions
+    })
+
+    lib.showContext('fx_serial:weaponInfo')
+
     CreateThread(function()
         while isanimating do
             Wait(100)
             if not lib.getOpenContextMenu() then
-                stopanimation()
+                cleanup()
                 break
             end
         end
     end)
 end)
 
-RegisterNetEvent('fx_serial:stopanimation', function()
-    stopanimation()
-end)
+RegisterNetEvent('fx_serial:stopAnimation', cleanup)
 
 RegisterNetEvent('fx_serial:notify', function(title, message, type)
     lib.notify({

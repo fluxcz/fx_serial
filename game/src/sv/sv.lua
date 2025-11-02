@@ -1,6 +1,6 @@
 local version = '1.1'
 
-local function checkversion()
+local function checkVersion()
     CreateThread(function()
         PerformHttpRequest('https://api.github.com/repos/fluxcz/fx_serial/releases/latest', function(err, text, headers)
             if err ~= 200 then
@@ -21,11 +21,11 @@ local function checkversion()
                 print('Get the updated version: https://github.com/fluxcz/fx_serial/archive/refs/tags/'..data.tag_name..'.zip')
                 print('^1-------------------------------------------------^7')
             end
-        end, 'GET', '', {})
+        end, 'GET')
     end)
 end
 
-local function initializedatabase()
+local function initializeDatabase()
     CreateThread(function()
         MySQL.query([[
             CREATE TABLE IF NOT EXISTS `fx_guns` (
@@ -43,7 +43,7 @@ local function initializedatabase()
     end)
 end
 
-local function converttotimezone(mysqltimestamp)
+local function convertToTimezone(mysqltimestamp)
     if not mysqltimestamp then
         return fx.messages.unknown
     end
@@ -108,13 +108,14 @@ local function getPlayerWeapons(source, cb)
     cb(weapons)
 end
 
-local function registerweapon(source, weapon, serial)
+local function registerWeapon(weapon, serial)
+    local source = source
     local xplayer = ESX.GetPlayerFromId(source)
     if not xplayer then return end
 
     local issupported = false
     for _, weapondata in ipairs(fx.supportedweapons) do
-        if string.upper(weapon) == weapondata.weapon then
+        if weapon == weapondata.weapon then
             issupported = true
             break
         end
@@ -125,7 +126,7 @@ local function registerweapon(source, weapon, serial)
         return
     end
 
-    MySQL.single('SELECT id FROM fx_guns WHERE serial = ?', {serial}, function(result)
+    MySQL.single('SELECT 1 FROM fx_guns WHERE serial = ?', {serial}, function(result)
         if result then
             TriggerClientEvent('fx_serial:notify', source, 'Registration', fx.messages.duplicate_serial, 'error')
             return
@@ -145,11 +146,12 @@ local function registerweapon(source, weapon, serial)
     end)
 end
 
-local function checkserial(source, serial)
+local function checkSerial(serial)
+    local source = source
     local xplayer = ESX.GetPlayerFromId(source)
-    if not xplayer then 
-        TriggerClientEvent('fx_serial:stopanimation', source)
-        return 
+    if not xplayer then
+        TriggerClientEvent('fx_serial:stopAnimation', source)
+        return
     end
 
     local ispolice = false
@@ -162,7 +164,7 @@ local function checkserial(source, serial)
 
     if not ispolice then
         TriggerClientEvent('fx_serial:notify', source, 'Serial Checker', fx.messages.not_police, 'error')
-        TriggerClientEvent('fx_serial:stopanimation', source)
+        TriggerClientEvent('fx_serial:stopAnimation', source)
         return
     end
 
@@ -186,21 +188,22 @@ local function checkserial(source, serial)
                     serial = serial
                 }
 
-                TriggerClientEvent('fx_serial:showweaponinfo', source, dataToSend)
+                TriggerClientEvent('fx_serial:showWeaponInfo', source, dataToSend)
             end)
         else
-            TriggerClientEvent('fx_serial:showweaponinfo', source, {
+            TriggerClientEvent('fx_serial:showWeaponInfo', source, {
                 registered = false
             })
         end
     end)
 end
 
-local function unregisterweapon(source, serial)
+local function unregisterWeapon(serial)
+    local source = source
     local xplayer = ESX.GetPlayerFromId(source)
-    if not xplayer then 
-        TriggerClientEvent('fx_serial:stopanimation', source)
-        return 
+    if not xplayer then
+        TriggerClientEvent('fx_serial:stopAnimation', source)
+        return
     end
 
     local ispolice = false
@@ -213,7 +216,7 @@ local function unregisterweapon(source, serial)
 
     if not ispolice then
         TriggerClientEvent('fx_serial:notify', source, 'Unregister', fx.messages.not_police, 'error')
-        TriggerClientEvent('fx_serial:stopanimation', source)
+        TriggerClientEvent('fx_serial:stopAnimation', source)
         return
     end
 
@@ -221,9 +224,8 @@ local function unregisterweapon(source, serial)
         if result then
             MySQL.query('DELETE FROM fx_guns WHERE serial = ?', {serial}, function(deleteResult)
                 if deleteResult and deleteResult.affectedRows > 0 then
-                    TriggerClientEvent('fx_serial:notify', source, 'Weapon Unregistered', 
-                        string.format('You have unregistered the weapon with serial: %s', serial), 
-                        'success')
+                    TriggerClientEvent('fx_serial:notify', source, 'Weapon Unregistered',
+                        string.format('You have unregistered the weapon with serial: %s', serial), 'success')
                 else
                     TriggerClientEvent('fx_serial:notify', source, 'Unregister', fx.messages.unregister_failed, 'error')
                 end
@@ -234,7 +236,7 @@ local function unregisterweapon(source, serial)
     end)
 end
 
-local function usechecker(source)
+local function useChecker(source)
     local xplayer = ESX.GetPlayerFromId(source)
     if not xplayer then return end
 
@@ -251,28 +253,18 @@ local function usechecker(source)
         return
     end
 
-    TriggerClientEvent('fx_serial:usechecker', source)
+    TriggerClientEvent('fx_serial:useChecker', source)
 end
 
-checkversion()
-initializedatabase()
+checkVersion()
+initializeDatabase()
 
-ESX.RegisterServerCallback('fx_serial:getplayerweapons', function(source, cb)
-    getplayerweapons(source, cb)
-end)
+ESX.RegisterServerCallback('fx_serial:getPlayerWeapons', getPlayerWeapons)
 
-RegisterNetEvent('fx_serial:registerweapon', function(weapon, serial)
-    registerweapon(source, weapon, serial)
-end)
+RegisterNetEvent('fx_serial:registerWeapon', registerWeapon)
 
-RegisterNetEvent('fx_serial:checkserial', function(serial)
-    checkserial(source, serial)
-end)
+RegisterNetEvent('fx_serial:checkSerial', checkSerial)
 
-RegisterNetEvent('fx_serial:unregisterweapon', function(serial)
-    unregisterweapon(source, serial)
-end)
+RegisterNetEvent('fx_serial:unregisterWeapon', unregisterWeapon)
 
-ESX.RegisterUsableItem(fx.checkeritem, function(source)
-    usechecker(source)
-end)
+ESX.RegisterUsableItem(fx.checkeritem, useChecker)
