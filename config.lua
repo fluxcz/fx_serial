@@ -14,7 +14,7 @@ fx.policejobs = {
 fx.checkeritem = 'serial_checker'
     
 fx.timezone = {
-    offset = 1,
+    offset = 0,
     -- Offsets:
     -- -8 = Pacific Standard Time (PST)
     -- -7 = Mountain Standard Time (MST)
@@ -29,30 +29,8 @@ fx.timezone = {
 }
 
 fx.supportedweapons = {
-    'WEAPON_PISTOL',
-    'WEAPON_COMBATPISTOL',
-    'WEAPON_APPISTOL',
-    'WEAPON_PISTOL50',
-    'WEAPON_SNSPISTOL',
-    'WEAPON_HEAVYPISTOL',
-    'WEAPON_VINTAGEPISTOL',
-    'WEAPON_MARKSMANPISTOL',
-    'WEAPON_REVOLVER',
-    'WEAPON_MICROSMG',
-    'WEAPON_SMG',
-    'WEAPON_ASSAULTSMG',
-    'WEAPON_COMBATPDW',
-    'WEAPON_PUMPSHOTGUN',
-    'WEAPON_SAWNOFFSHOTGUN',
-    'WEAPON_ASSAULTRIFLE',
-    'WEAPON_CARBINERIFLE',
-    'WEAPON_ADVANCEDRIFLE',
-    'WEAPON_SPECIALCARBINE',
-    'WEAPON_BULLPUPRIFLE',
-    'WEAPON_COMPACTRIFLE',
-    'WEAPON_SNIPERRIFLE',
-    'WEAPON_HEAVYSNIPER',
-    'WEAPON_MARKSMANRIFLE'
+    {weapon = 'WEAPON_PISTOL', label = 'Pistol'},
+    {weapon = 'WEAPON_COMBATPISTOL', label = 'Combat Pistol'},
 }
 
 fx.target = {
