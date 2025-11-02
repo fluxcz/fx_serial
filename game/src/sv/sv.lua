@@ -2,29 +2,24 @@ local version = '1.1'
 
 local function checkversion()
     CreateThread(function()
-        PerformHttpRequest('https://raw.githubusercontent.com/fluxcz/versions/refs/heads/main/all.json', function(err, text, headers)
-            if text then
-                local data = json.decode(text)
-                if data and data['fx-serial'] then
-                    local newestversion = data['fx-serial'].latest
-                    if newestversion and newestversion > version then
-                        print('^1-------------------------------------------------^7')
-                        print('^6New Version Released for fx_serial^7')
-                        print('')
-                        print(string.format('^1Your Version: ^7%s', version))
-                        print(string.format('^6Newest Version: ^7%s', newestversion))
-                        print('')
-                        print('^6Changelog^7')
-                        for i, change in ipairs(data['fx-serial'].changelog) do
-                            print(string.format('^7%s', change))
-                        end
-                        print('^1-------------------------------------------------^7')
-                    else
-                        print('^6[fx_serial] You are running the latest version.^7')
-                    end
-                end
-            else
+        PerformHttpRequest('https://api.github.com/repos/fluxcz/fx_serial/releases/latest', function(err, text, headers)
+            if err ~= 200 then
                 print('^1[fx_serial] Could not check for new version.^7')
+                return
+            end
+
+            local data = json.decode(text)
+            if data.tag_name == version then
+                print('^6[fx_serial] You are running the latest version.^7')
+            else
+                print('^1-------------------------------------------------')
+                print('^6New Version Released for fx_serial\n')
+                print('^1Your Version: ^7'..version)
+                print('^6Newsest Version: ^7'..data.tag_name..'\n')
+                print('^6Changelog:^7')
+                print(data.body..'\n')
+                print('Get the updated version: https://github.com/fluxcz/fx_serial/archive/refs/tags/'..data.tag_name..'.zip')
+                print('^1-------------------------------------------------^7')
             end
         end, 'GET', '', {})
     end)
